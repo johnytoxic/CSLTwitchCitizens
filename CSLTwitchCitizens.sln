@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSLTwitchCitizens", "CSLTwitchCitizens\CSLTwitchCitizens.csproj", "{53721672-45EA-49D1-921D-80D1FBDB8086}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B04B18B9-9D60-43A1-A269-D0990452DFDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B04B18B9-9D60-43A1-A269-D0990452DFDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B04B18B9-9D60-43A1-A269-D0990452DFDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B04B18B9-9D60-43A1-A269-D0990452DFDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{209F9D02-9C65-46D0-AB24-8A4282F7DD7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{209F9D02-9C65-46D0-AB24-8A4282F7DD7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{209F9D02-9C65-46D0-AB24-8A4282F7DD7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{209F9D02-9C65-46D0-AB24-8A4282F7DD7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53721672-45EA-49D1-921D-80D1FBDB8086}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53721672-45EA-49D1-921D-80D1FBDB8086}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53721672-45EA-49D1-921D-80D1FBDB8086}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53721672-45EA-49D1-921D-80D1FBDB8086}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
