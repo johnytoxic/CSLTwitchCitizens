@@ -1,19 +1,29 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
-using TwitchLib.Api;
+using Newtonsoft.Json;
 
 namespace CSLTwitchCitizens
 {
     public class TwitchChattersJob
     {
+        private struct ChattersResponse
+        {
+            [JsonProperty(PropertyName = "chatters_count")]
+            public int Count { get; set; }
+
+            [JsonProperty(PropertyName = "chatters")]
+            public Dictionary<string, List<string>> Chatters { get; set; }
+        }
+
         public string ChannelName;
         public int UpdateInterval = 5 * 60 * 1000; // 5 minutes
 
-        public event EventHandler<string[]> ChattersUpdated;
+        public delegate void OnChattersUpdated(object sender, string[] chatters);
+        public event OnChattersUpdated ChattersUpdated;
 
-        private TwitchAPI _api;
         private Timer _timer;
 
         public TwitchChattersJob(string channelName)
@@ -28,23 +38,27 @@ namespace CSLTwitchCitizens
 
         public void Start()
         {
-            _api = new TwitchAPI();
-            _api.Settings.ClientId = "anonymous";
-
             _timer = new Timer(DoUpdate, null, 0, UpdateInterval);
         }
 
         public void Stop()
         {
             _timer.Dispose();
-
-            _api = null;
         }
 
-        private async void DoUpdate(object state)
+        private void DoUpdate(object state)
         {
-            var chattersResponse = await _api.Undocumented.GetChattersAsync(ChannelName);
-            var chatters = chattersResponse.Select(c => c.Username).ToArray();
+            var request = (HttpWebRequest) WebRequest.Create($"https://tmi.twitch.tv/group/user/{ChannelName}/chatters");
+            request.Accept = "application/json";
+            request.Headers.Add("Client-ID: anonymous");
+
+            var response = (HttpWebResponse) request.GetResponse();
+            var chattersResponse =
+                JsonConvert.DeserializeObject<ChattersResponse>(response.GetResponseStream()?.ToString());
+
+            string[] chatters = chattersResponse.Count > 0
+                ? chattersResponse.Chatters.Values.SelectMany(c => c).ToArray()
+                : new string[] { };
 
             ChattersUpdated?.Invoke(this, chatters);
         }
