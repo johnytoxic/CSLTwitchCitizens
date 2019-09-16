@@ -31,7 +31,11 @@ namespace CSLTwitchCitizens
         public void OnSettingsUI(UIHelperBase helper)
         {
             UIHelperBase group = helper.AddGroup("Twitch Citizens Settings");
-            group.AddTextfield("Twitch Channel Name (e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")", TwitchChannelName, null, HandleTwitchChannelChanged);
+            group.AddTextfield(
+            "Twitch Channel Name (e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")",
+            TwitchChannelName,
+            HandleTwitchChannelChanged
+            );
         }
 
         private void PatchMethods()
