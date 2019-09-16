@@ -10,13 +10,26 @@ namespace CSLTwitchCitizens
         public string Name => "Twitch Citizens";
         public string Description => "Integrate your Twitch.tv viewers into Cities: Skylines";
 
+        private TwitchChattersJob _job;
+
+        private const string TwitchChannelNamePrefKey = "TwitchCitizensMod_TwitchChannelName";
+        private string TwitchChannelName
+        {
+            get => PlayerPrefs.GetString(TwitchChannelNamePrefKey, "");
+            set => PlayerPrefs.SetString(TwitchChannelNamePrefKey, value);
+        }
+
         public void OnEnabled()
         {
             PatchMethods();
 
-            var job = new TwitchChattersJob("tfue");
-            job.ChattersUpdated += HandleChattersUpdated;
-            job.Start();
+            MaybeStartPollingTwitchChatters();
+        }
+
+        public void OnSettingsUI(UIHelperBase helper)
+        {
+            UIHelperBase group = helper.AddGroup("Twitch Citizens Settings");
+            group.AddTextfield("Twitch Channel Name (e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")", TwitchChannelName, null, HandleTwitchChannelChanged);
         }
 
         private void PatchMethods()
@@ -31,6 +44,28 @@ namespace CSLTwitchCitizens
         private void HandleChattersUpdated(object sender, string[] chatters)
         {
             GenerateCitizenNamePatch.CitizenNames = chatters;
+        }
+
+        private void MaybeStartPollingTwitchChatters()
+        {
+            if (!string.IsNullOrEmpty(TwitchChannelName))
+            {
+                _job = new TwitchChattersJob(TwitchChannelName);
+                _job.ChattersUpdated += HandleChattersUpdated;
+                _job.Start();
+            }
+            else
+            {
+                _job?.Stop();
+            }
+        }
+
+        private void HandleTwitchChannelChanged(string channelName)
+        {
+            TwitchChannelName = channelName;
+
+            // TODO: validate channel
+            MaybeStartPollingTwitchChatters();
         }
     }
 }
