@@ -30,7 +30,7 @@ namespace CSLTwitchCitizens
 
         private void HandleChattersUpdated(object sender, string[] chatters)
         {
-            Debug.Log($"Update chatters ({chatters.Length})");
+            GenerateCitizenNamePatch.CitizenNames = chatters;
         }
     }
 }
