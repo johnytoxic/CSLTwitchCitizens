@@ -1,4 +1,6 @@
-﻿using ICities;
+﻿using System;
+using Harmony;
+using ICities;
 
 namespace CSLTwitchCitizens
 {
@@ -6,5 +8,19 @@ namespace CSLTwitchCitizens
     {
         public string Name => "Twitch Citizens";
         public string Description => "Integrate your Twitch.tv viewers into Cities: Skylines";
+
+        public void OnEnabled()
+        {
+            PatchMethods();
+        }
+
+        private void PatchMethods()
+        {
+            var harmony = HarmonyInstance.Create("net.johnytoxic.csltwitchcitizens");
+
+            var original = typeof(CitizenAI).GetMethod("GenerateCitizenName", new Type[] {typeof(uint), typeof(byte)});
+            var prefix = typeof(GenerateCitizenNamePatch).GetMethod("Prefix");
+            harmony.Patch(original, new HarmonyMethod(prefix));
+        }
     }
 }
