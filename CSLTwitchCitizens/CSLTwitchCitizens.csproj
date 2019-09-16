@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net472</TargetFramework>
+        <TargetFramework>net35</TargetFramework>
         <AssemblyName>TwitchCitizens</AssemblyName>
         <Title>Twitch Citizens</Title>
         <Authors>johnytoxic</Authors>
