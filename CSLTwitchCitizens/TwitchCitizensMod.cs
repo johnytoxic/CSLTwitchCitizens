@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Harmony;
 using ICities;
 using UnityEngine;
@@ -43,7 +45,11 @@ namespace CSLTwitchCitizens
 
         private void HandleChattersUpdated(object sender, string[] chatters)
         {
-            GenerateCitizenNamePatch.CitizenNames = chatters;
+            // merge existing chatters with new ones but keep old ones
+            var currentChatters = new HashSet<string>(GenerateCitizenNamePatch.CitizenNames);
+            currentChatters.UnionWith(chatters);
+
+            GenerateCitizenNamePatch.CitizenNames = currentChatters.ToArray();
         }
 
         private void MaybeStartPollingTwitchChatters()
