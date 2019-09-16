@@ -28,6 +28,7 @@
 
     <ItemGroup>
       <PackageReference Include="Lib.Harmony" Version="1.2.0.1" />
+      <PackageReference Include="TwitchLib.Api" Version="3.0.6-CI-20190905-060235" />
     </ItemGroup>
 
 </Project>

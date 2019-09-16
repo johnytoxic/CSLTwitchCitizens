@@ -1,6 +1,7 @@
 ﻿using System;
 using Harmony;
 using ICities;
+using UnityEngine;
 
 namespace CSLTwitchCitizens
 {
@@ -12,6 +13,10 @@ namespace CSLTwitchCitizens
         public void OnEnabled()
         {
             PatchMethods();
+
+            var job = new TwitchChattersJob("tfue");
+            job.ChattersUpdated += HandleChattersUpdated;
+            job.Start();
         }
 
         private void PatchMethods()
@@ -21,6 +26,11 @@ namespace CSLTwitchCitizens
             var original = typeof(CitizenAI).GetMethod("GenerateCitizenName", new Type[] {typeof(uint), typeof(byte)});
             var prefix = typeof(GenerateCitizenNamePatch).GetMethod("Prefix");
             harmony.Patch(original, new HarmonyMethod(prefix));
+        }
+
+        private void HandleChattersUpdated(object sender, string[] chatters)
+        {
+            Debug.Log($"Update chatters ({chatters.Length})");
         }
     }
 }
