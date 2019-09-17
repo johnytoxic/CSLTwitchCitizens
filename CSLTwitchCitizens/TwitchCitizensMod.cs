@@ -39,9 +39,10 @@ namespace CSLTwitchCitizens
         {
             UIHelperBase settingsGroup = helper.AddGroup("Twitch Citizens Settings");
             var channelNameTextField = (UITextField) settingsGroup.AddTextfield(
-            "Twitch Channel Name",
-            TwitchChannelName,
-            HandleTwitchChannelChanged
+                "Twitch Channel Name",
+                TwitchChannelName,
+                (v) => { },
+                HandleTwitchChannelChanged
             );
 
             var textfieldContainer = channelNameTextField.GetComponent<UIComponent>().parent as UIPanel;
