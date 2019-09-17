@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using ColossalFramework.UI;
-using Harmony;
+﻿using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
 
@@ -14,25 +9,19 @@ namespace CSLTwitchCitizens
         public string Name => "Twitch Citizens";
         public string Description => "Integrate your Twitch.tv viewers into Cities: Skylines";
 
-        private TwitchChattersJob _job;
+        public delegate void OnTwitchChannelNameChanged(object sender, string channelName);
+
+        public static event OnTwitchChannelNameChanged TwitchChannelNameChanged;
 
         private const string TwitchChannelNamePrefKey = "TwitchCitizensMod_TwitchChannelName";
-        private string TwitchChannelName
+        public static string TwitchChannelName
         {
             get => PlayerPrefs.GetString(TwitchChannelNamePrefKey, "");
-            set => PlayerPrefs.SetString(TwitchChannelNamePrefKey, value);
-        }
-
-        public void OnEnabled()
-        {
-            PatchMethods();
-
-            MaybeStartPollingTwitchChatters();
-        }
-
-        public void OnDisabled()
-        {
-            _job?.Stop();
+            set
+            {
+                PlayerPrefs.SetString(TwitchChannelNamePrefKey, value);
+                TwitchChannelNameChanged?.Invoke(null, value);
+            }
         }
 
         public void OnSettingsUI(UIHelperBase helper)
@@ -42,49 +31,12 @@ namespace CSLTwitchCitizens
                 "Twitch Channel Name",
                 TwitchChannelName,
                 (v) => { },
-                HandleTwitchChannelChanged
+                (v) => { TwitchChannelName = v; }
             );
 
             var textfieldContainer = channelNameTextField.GetComponent<UIComponent>().parent as UIPanel;
             var channelNameHint = textfieldContainer.AddUIComponent<UILabel>();
             channelNameHint.text = "(e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")";
-        }
-
-        private void PatchMethods()
-        {
-            var harmony = HarmonyInstance.Create("net.johnytoxic.csltwitchcitizens");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-        }
-
-        private void HandleChattersUpdated(object sender, string[] chatters)
-        {
-            // merge existing chatters with new ones but keep old ones
-            var currentChatters = new HashSet<string>(GenerateCitizenNamePatch.CitizenNames);
-            currentChatters.UnionWith(chatters);
-
-            GenerateCitizenNamePatch.CitizenNames = currentChatters.ToArray();
-        }
-
-        private void MaybeStartPollingTwitchChatters()
-        {
-            if (!string.IsNullOrEmpty(TwitchChannelName))
-            {
-                _job = new TwitchChattersJob(TwitchChannelName);
-                _job.ChattersUpdated += HandleChattersUpdated;
-                _job.Start();
-            }
-            else
-            {
-                _job?.Stop();
-            }
-        }
-
-        private void HandleTwitchChannelChanged(string channelName)
-        {
-            TwitchChannelName = channelName;
-
-            // TODO: validate channel
-            MaybeStartPollingTwitchChatters();
         }
     }
 }
