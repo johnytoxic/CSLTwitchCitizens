@@ -1,22 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ColossalFramework.HTTP;
-using Newtonsoft.Json;
 
 namespace CSLTwitchCitizens
 {
     public class TwitchChattersJob
     {
-        private struct ChattersResponse
-        {
-            [JsonProperty(PropertyName = "chatters_count")]
-            public int Count { get; set; }
-
-            [JsonProperty(PropertyName = "chatters")]
-            public Dictionary<string, List<string>> Chatters { get; set; }
-        }
-
         public string ChannelName;
         public int UpdateInterval = 5 * 60 * 1000; // 5 minutes
 
@@ -53,21 +44,25 @@ namespace CSLTwitchCitizens
 
             request.Send(req =>
             {
-                if (req.response == null)
+                var chattersResponse = req.response?.Object;
+                if (chattersResponse == null)
                 {
-                    // TODO: handle error
+                    // TODO: error handling
                     return;
                 }
 
-                var res = req.response.Text;
-                var chattersResponse =
-                    JsonConvert.DeserializeObject<ChattersResponse>(res);
+                var chattersCount = (int) chattersResponse["chatter_count"];
 
-                string[] chatters = chattersResponse.Count > 0
-                    ? chattersResponse.Chatters.Values.SelectMany(c => c).ToArray()
-                    : new string[] { };
+                if (chattersCount > 0)
+                {
+                    var chatters = new List<string>(chattersCount);
+                    foreach (DictionaryEntry group in (Hashtable) chattersResponse["chatters"])
+                    {
+                        chatters.AddRange(((ArrayList)group.Value).Cast<string>().ToList());
+                    }
 
-                ChattersUpdated?.Invoke(this, chatters);
+                    ChattersUpdated?.Invoke(this, chatters.ToArray());
+                }
             });
         }
     }
