@@ -8,7 +8,7 @@ namespace CSLTwitchCitizens
     [HarmonyPatch(typeof(CitizenAI), "GenerateCitizenName", new Type[]{typeof(uint), typeof(byte)})]
     public class GenerateCitizenNamePatch
     {
-        public static string[] CitizenNames;
+        public static string[] CitizenNames = new string[0];
         public static int NamesThreshold = 200;
 
         /// <see cref="CitizenAI.GenerateCitizenName"/>
