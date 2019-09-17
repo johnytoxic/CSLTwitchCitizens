@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
+using ColossalFramework.HTTP;
 using Newtonsoft.Json;
 
 namespace CSLTwitchCitizens
@@ -48,19 +47,28 @@ namespace CSLTwitchCitizens
 
         private void DoUpdate(object state)
         {
-            var request = (HttpWebRequest) WebRequest.Create($"https://tmi.twitch.tv/group/user/{ChannelName}/chatters");
-            request.Accept = "application/json";
-            request.Headers.Add("Client-ID: anonymous");
+            var request = new Request("GET", $"https://tmi.twitch.tv/group/user/{ChannelName}/chatters");
+            request.AddHeader("Client-ID", "anonymous");
+            request.AddHeader("Accept", "application/json");
 
-            var response = (HttpWebResponse) request.GetResponse();
-            var chattersResponse =
-                JsonConvert.DeserializeObject<ChattersResponse>(response.GetResponseStream()?.ToString());
+            request.Send(req =>
+            {
+                if (req.response == null)
+                {
+                    // TODO: handle error
+                    return;
+                }
 
-            string[] chatters = chattersResponse.Count > 0
-                ? chattersResponse.Chatters.Values.SelectMany(c => c).ToArray()
-                : new string[] { };
+                var res = req.response.Text;
+                var chattersResponse =
+                    JsonConvert.DeserializeObject<ChattersResponse>(res);
 
-            ChattersUpdated?.Invoke(this, chatters);
+                string[] chatters = chattersResponse.Count > 0
+                    ? chattersResponse.Chatters.Values.SelectMany(c => c).ToArray()
+                    : new string[] { };
+
+                ChattersUpdated?.Invoke(this, chatters);
+            });
         }
     }
 }
