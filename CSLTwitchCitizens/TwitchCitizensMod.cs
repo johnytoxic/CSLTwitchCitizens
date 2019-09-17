@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Harmony;
 using ICities;
 using UnityEngine;
@@ -46,10 +47,7 @@ namespace CSLTwitchCitizens
         private void PatchMethods()
         {
             var harmony = HarmonyInstance.Create("net.johnytoxic.csltwitchcitizens");
-
-            var original = typeof(CitizenAI).GetMethod("GenerateCitizenName", new Type[] {typeof(uint), typeof(byte)});
-            var prefix = typeof(GenerateCitizenNamePatch).GetMethod("Prefix");
-            harmony.Patch(original, new HarmonyMethod(prefix));
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
         private void HandleChattersUpdated(object sender, string[] chatters)

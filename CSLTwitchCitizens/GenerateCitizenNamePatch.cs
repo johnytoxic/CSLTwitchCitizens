@@ -1,11 +1,10 @@
-using System;
 using ColossalFramework.Globalization;
 using ColossalFramework.Math;
 using Harmony;
 
 namespace CSLTwitchCitizens
 {
-    [HarmonyPatch(typeof(CitizenAI), "GenerateCitizenName", new Type[]{typeof(uint), typeof(byte)})]
+    [HarmonyPatch(typeof(CitizenAI), "GenerateCitizenName")]
     public class GenerateCitizenNamePatch
     {
         public static string[] CitizenNames = new string[0];
