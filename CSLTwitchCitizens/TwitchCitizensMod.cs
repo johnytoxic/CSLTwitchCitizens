@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ColossalFramework.UI;
 using Harmony;
 using ICities;
 using UnityEngine;
@@ -36,12 +37,16 @@ namespace CSLTwitchCitizens
 
         public void OnSettingsUI(UIHelperBase helper)
         {
-            UIHelperBase group = helper.AddGroup("Twitch Citizens Settings");
-            group.AddTextfield(
-            "Twitch Channel Name (e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")",
+            UIHelperBase settingsGroup = helper.AddGroup("Twitch Citizens Settings");
+            var channelNameTextField = (UITextField) settingsGroup.AddTextfield(
+            "Twitch Channel Name",
             TwitchChannelName,
             HandleTwitchChannelChanged
             );
+
+            var textfieldContainer = channelNameTextField.GetComponent<UIComponent>().parent as UIPanel;
+            var channelNameHint = textfieldContainer.AddUIComponent<UILabel>();
+            channelNameHint.text = "(e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")";
         }
 
         private void PatchMethods()
