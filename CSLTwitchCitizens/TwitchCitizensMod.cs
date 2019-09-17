@@ -28,6 +28,11 @@ namespace CSLTwitchCitizens
             MaybeStartPollingTwitchChatters();
         }
 
+        public void OnDisabled()
+        {
+            _job?.Stop();
+        }
+
         public void OnSettingsUI(UIHelperBase helper)
         {
             UIHelperBase group = helper.AddGroup("Twitch Citizens Settings");
