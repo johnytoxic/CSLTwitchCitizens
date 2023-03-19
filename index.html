@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Twitch Citizens Mod - Cities: Skylines</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            background-color: #f3efef;
+            display: flex;
+            justify-content: center;
+        }
+
+        main {
+            padding: 1em 1.5em;
+            border: 1px solid #777;
+            border-radius: 0.5em;
+            margin-top: 2rem;
+            background-color: #fbfbfb;
+            width: 520px;
+        }
+
+        h1, h2 {
+            margin: 0;
+            text-align: center;
+        }
+
+        header {
+            margin-bottom: 2em;
+        }
+
+        ol {
+            list-style: none;
+            counter-reset: steps;
+        }
+
+        ol li {
+            margin: 1em 0;
+            position: relative;
+            counter-increment: steps;
+        }
+
+        ol li::before {
+            position: absolute;
+            left: -2em;
+            content: counter(steps);
+            width: 1.5em;
+            height: 1.5em;
+            border: 1px solid #777;
+            border-radius: 50px;
+            display: inline-block;
+            text-align: center;
+            margin-right: 1em;
+        }
+
+        #card-footer {
+            margin-top: 2em;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn {
+            font-size: 1em;
+            padding: 0.5em 1em;
+            background-color: #9146ff;
+            color: #fff;
+            text-decoration: none;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            box-shadow: 2px 4px 0 #aa74f9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .input-grp {
+            padding: 1em 1.5em;
+            display: flex;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.5em 1em;
+            border: 2px solid #aa74f9;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Twitch Citizens Mod</h1>
+            <h2>Cities: Skylines</h2>
+        </header>
+
+        <div id="intro">
+            <p>Visit the mod page on the Steam Workshop: <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1865667356" target="_blank">Twitch Citizens</a></p>
+            <p>To successfully configure this mod, please follow these steps:</p>
+    
+            <ol>
+                <li>
+                    Click the button below, to authorize this mod to fetch viewers from your Twitch.tv chat.<br/>
+                    <small>After you complete the authorization process, you will be redirected to this page.</small>
+                </li>
+                <li>
+                    Copy the secret into the mod settings.
+                    <br/><small>Please do not share this secret with anyone!</small>
+                </li>
+                <li>Watch your Twitch viewers walk around your city!</li>
+            </ol>
+    
+            <div id="card-footer">
+                <a class="btn" href="https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=nseaqiq9r9k4kf6lorq69djkxizozt&redirect_uri=https://johnytoxic.github.io/CSLTwitchCitizens&scope=moderator%3Aread%3Achatters">
+                    Authorize now
+                </a>
+            </div>
+        </div>
+        <div id="complete" class="hidden">
+            <p>Copy the secret below into the mod settings.<br/><small>Please do not share this secret with anyone!</small></p>
+
+            <div class="input-grp">
+                <input type="text" id="client-secret" readonly/>
+                <button class="btn" id="copy-token">Copy</button>
+            </div>
+        </div>
+    </main>
+    <script type="text/javascript">
+        const hash = document.location.hash;
+        if (!!hash) {
+            document.getElementById('intro').classList.add('hidden');
+            document.getElementById('complete').classList.remove('hidden');
+
+            const client_secret = hash.match(/access_token=([^&]+)/)[1];
+            document.getElementById('client-secret').value = client_secret;
+
+            document.getElementById('copy-token').addEventListener('click', e => {
+                e.preventDefault();
+                navigator.clipboard.writeText(client_secret);
+            });
+        }
+    </script>
+</body>
+</html>
