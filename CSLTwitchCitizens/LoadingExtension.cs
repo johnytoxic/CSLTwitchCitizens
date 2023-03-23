@@ -60,7 +60,7 @@ namespace CSLTwitchCitizens
         {
             if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(broadcasterID))
             {
-                _job = new TwitchChattersJob(accessToken, broadcasterID);
+                _job = new TwitchChattersJob(new TwitchAPI(accessToken), broadcasterID);
                 _job.ChattersUpdated += HandleChattersUpdated;
                 _job.Start();
             }

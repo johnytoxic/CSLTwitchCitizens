@@ -1,8 +1,5 @@
-﻿using ColossalFramework.HTTP;
-using ColossalFramework.UI;
+﻿using ColossalFramework.UI;
 using ICities;
-using System;
-using System.Collections;
 using UnityEngine;
 
 namespace CSLTwitchCitizens
@@ -40,7 +37,8 @@ namespace CSLTwitchCitizens
 
             void UpdateBroadcaster(string access_token)
             {
-                FetchBroadcasterId(access_token, ex =>
+                var api = new TwitchAPI(access_token);
+                api.GetBroadcaster((broadcaster, ex) =>
                 {
                     if (ex != null)
                     {
@@ -49,8 +47,12 @@ namespace CSLTwitchCitizens
                     }
                     else
                     {
+                        TwitchBroadcasterID = broadcaster.ID;
+                        TwitchBroadcasterName = broadcaster.Name;
+
                         errorLabel.text = "";
                         broadcasterNameTextField.text = TwitchBroadcasterName;
+
                         TwitchSettingsChanged.Invoke(this, TwitchAccessToken, TwitchAccessToken);
                     }
                 });
@@ -96,49 +98,6 @@ namespace CSLTwitchCitizens
                 && string.IsNullOrEmpty(TwitchBroadcasterID))
             {
                 UpdateBroadcaster(TwitchAccessToken);
-            }
-        }
-
-        private void FetchBroadcasterId(string access_token, Action<Exception> callback)
-        {
-            // see https://dev.twitch.tv/docs/api/reference/#get-users
-            var request = new Request("GET", "https://api.twitch.tv/helix/users");
-            request.AddHeader("Authorization", $"Bearer {access_token}");
-            request.AddHeader("Client-Id", "nseaqiq9r9k4kf6lorq69djkxizozt");
-            request.AddHeader("Accept", "application/json");
-
-            try
-            {
-                request.Send(req =>
-                {
-                    var res = req.response;
-                    Debug.Log($"TwitchAPI response ({res.status}): {res.Text} | {res.Object?["data"]} | {((ArrayList)res.Object?["data"])?[0]}");
-                    if (res.status != 200)
-                    {
-                        if (res.status == 401)
-                            callback(new Exception("Invalid access token"));
-                        else
-                            callback(new Exception("Unexpected API error."));
-
-                        return;
-                    }
-
-                    var user = (res.Object?["data"] as ArrayList)?[0] as Hashtable;
-                    if (user == null)
-                    {
-                        callback(new Exception("Unexpected error: API returned no data."));
-                        return;
-                    }
-
-                    TwitchBroadcasterID = (string)user["user_id"];
-                    TwitchBroadcasterName = (string)user["display_name"];
-
-                    callback(null);
-                });
-            }
-            catch (Exception e)
-            {
-                callback(e);
             }
         }
     }

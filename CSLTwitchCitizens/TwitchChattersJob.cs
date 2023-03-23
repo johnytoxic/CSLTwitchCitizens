@@ -3,23 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ColossalFramework.HTTP;
+using UnityEngine;
 
 namespace CSLTwitchCitizens
 {
-    public class TwitchChattersJob
+    internal class TwitchChattersJob
     {
-        public string AccessToken;
-        public string BroadcasterID;
         public int UpdateInterval = 5 * 60 * 1000; // 5 minutes
+
+        private TwitchAPI api;
+        private string BroadcasterID;
 
         public delegate void OnChattersUpdated(object sender, string[] chatters);
         public event OnChattersUpdated ChattersUpdated;
 
         private Timer _timer;
 
-        public TwitchChattersJob(string accessToken, string broadcasterID)
+        public TwitchChattersJob(TwitchAPI api, string broadcasterID)
         {
-            AccessToken = accessToken;
+            this.api = api;
             BroadcasterID = broadcasterID;
         }
 
@@ -40,30 +42,16 @@ namespace CSLTwitchCitizens
 
         private void DoUpdate(object state)
         {
-            // see https://dev.twitch.tv/docs/api/reference/#get-chatters
-            var request = new Request("GET", $"https://api.twitch.tv/helix/chat/chatters?broadcaster_id={BroadcasterID}&moderator_id={BroadcasterID}");
-            request.AddHeader("Authorization", $"Bearer {AccessToken}");
-            request.AddHeader("Client-Id", "nseaqiq9r9k4kf6lorq69djkxizozt");
-            request.AddHeader("Accept", "application/json");
-
-            request.Send(req =>
+            api.GetChatters(BroadcasterID, (chatters, ex) =>
             {
-                var res = req.response;
-                var chatters = res.Object?["data"] as ArrayList;
-
-                if (chatters == null || chatters.Count == 0)
+                if (ex != null)
                 {
                     // TODO: handle error (empty response)
+                    Debug.Log($"CSLTwitchCitizens: no chatters retrieved from API. Reason: {ex.Message}");
                     return;
                 }
 
-                var chattersNames = new List<string>(chatters.Count);
-                foreach (Hashtable chatter in chatters)
-                {
-                    chattersNames.Add(chatter["user_name"] as string);
-                }
-
-                ChattersUpdated?.Invoke(this, chattersNames.ToArray());
+                ChattersUpdated?.Invoke(this, chatters.ToArray());
             });
         }
     }
