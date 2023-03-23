@@ -57,7 +57,7 @@ namespace CSLTwitchCitizens
 
                 var b = new BroadcasterDAO
                 {
-                    ID = (string)user["user_id"],
+                    ID = (string)user["id"],
                     Name = (string)user["display_name"]
                 };
 

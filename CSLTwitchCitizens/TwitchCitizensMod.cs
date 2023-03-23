@@ -53,7 +53,7 @@ namespace CSLTwitchCitizens
                         errorLabel.text = "";
                         broadcasterNameTextField.text = TwitchBroadcasterName;
 
-                        TwitchSettingsChanged.Invoke(this, TwitchAccessToken, TwitchAccessToken);
+                        TwitchSettingsChanged.Invoke(this, TwitchAccessToken, TwitchBroadcasterID);
                     }
                 });
             }
