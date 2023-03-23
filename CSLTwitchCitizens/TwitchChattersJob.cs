@@ -8,7 +8,8 @@ namespace CSLTwitchCitizens
 {
     public class TwitchChattersJob
     {
-        public string ChannelName;
+        public string AccessToken;
+        public string BroadcasterID;
         public int UpdateInterval = 5 * 60 * 1000; // 5 minutes
 
         public delegate void OnChattersUpdated(object sender, string[] chatters);
@@ -16,9 +17,10 @@ namespace CSLTwitchCitizens
 
         private Timer _timer;
 
-        public TwitchChattersJob(string channelName)
+        public TwitchChattersJob(string accessToken, string broadcasterID)
         {
-            ChannelName = channelName;
+            AccessToken = accessToken;
+            BroadcasterID = broadcasterID;
         }
 
         ~TwitchChattersJob()
@@ -38,31 +40,30 @@ namespace CSLTwitchCitizens
 
         private void DoUpdate(object state)
         {
-            var request = new Request("GET", $"https://tmi.twitch.tv/group/user/{ChannelName}/chatters");
-            request.AddHeader("Client-ID", "anonymous");
+            // see https://dev.twitch.tv/docs/api/reference/#get-chatters
+            var request = new Request("GET", $"https://api.twitch.tv/helix/chat/chatters?broadcaster_id={BroadcasterID}&moderator_id={BroadcasterID}");
+            request.AddHeader("Authorization", $"Bearer {AccessToken}");
+            request.AddHeader("Client-Id", "nseaqiq9r9k4kf6lorq69djkxizozt");
             request.AddHeader("Accept", "application/json");
 
             request.Send(req =>
             {
-                var chattersResponse = req.response?.Object;
-                if (chattersResponse == null)
+                var res = req.response;
+                var chatters = res.Object?["data"] as ArrayList;
+
+                if (chatters == null || chatters.Count == 0)
                 {
-                    // TODO: error handling
+                    // TODO: handle error (empty response)
                     return;
                 }
 
-                var chattersCount = (int) chattersResponse["chatter_count"];
-
-                if (chattersCount > 0)
+                var chattersNames = new List<string>(chatters.Count);
+                foreach (Hashtable chatter in chatters)
                 {
-                    var chatters = new List<string>(chattersCount);
-                    foreach (DictionaryEntry group in (Hashtable) chattersResponse["chatters"])
-                    {
-                        chatters.AddRange(((ArrayList)group.Value).Cast<string>().ToList());
-                    }
-
-                    ChattersUpdated?.Invoke(this, chatters.ToArray());
+                    chattersNames.Add(chatter["user_name"] as string);
                 }
+
+                ChattersUpdated?.Invoke(this, chattersNames.ToArray());
             });
         }
     }
