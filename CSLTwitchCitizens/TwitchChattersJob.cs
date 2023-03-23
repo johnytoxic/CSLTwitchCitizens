@@ -33,6 +33,7 @@ namespace CSLTwitchCitizens
         public void Start()
         {
             _timer = new Timer(DoUpdate, null, 0, UpdateInterval);
+            DoUpdate(null);
         }
 
         public void Stop()
