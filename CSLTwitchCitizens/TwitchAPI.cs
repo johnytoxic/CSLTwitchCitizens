@@ -22,7 +22,7 @@ namespace CSLTwitchCitizens
 
         private Request prepareRequest(string path)
         {
-            var request = new Request("GET", $"https://api.twitch.tv/{path}");
+            var request = new Request("GET", $"https://twitchapiproxy.kettenclan.de/{path}");
             request.AddHeader("Authorization", $"Bearer {AccessToken}");
             request.AddHeader("Client-Id", "nseaqiq9r9k4kf6lorq69djkxizozt");
             request.AddHeader("Accept", "application/json");
