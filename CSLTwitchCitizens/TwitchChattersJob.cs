@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ColossalFramework.HTTP;
+using UnityEngine;
 
 namespace CSLTwitchCitizens
 {
-    public class TwitchChattersJob
+    internal class TwitchChattersJob
     {
-        public string ChannelName;
         public int UpdateInterval = 5 * 60 * 1000; // 5 minutes
+
+        private TwitchAPI api;
+        private string BroadcasterID;
 
         public delegate void OnChattersUpdated(object sender, string[] chatters);
         public event OnChattersUpdated ChattersUpdated;
 
         private Timer _timer;
 
-        public TwitchChattersJob(string channelName)
+        public TwitchChattersJob(TwitchAPI api, string broadcasterID)
         {
-            ChannelName = channelName;
+            this.api = api;
+            BroadcasterID = broadcasterID;
         }
 
         ~TwitchChattersJob()
@@ -38,31 +42,16 @@ namespace CSLTwitchCitizens
 
         private void DoUpdate(object state)
         {
-            var request = new Request("GET", $"https://tmi.twitch.tv/group/user/{ChannelName}/chatters");
-            request.AddHeader("Client-ID", "anonymous");
-            request.AddHeader("Accept", "application/json");
-
-            request.Send(req =>
+            api.GetChatters(BroadcasterID, (chatters, ex) =>
             {
-                var chattersResponse = req.response?.Object;
-                if (chattersResponse == null)
+                if (ex != null)
                 {
-                    // TODO: error handling
+                    // TODO: handle error (empty response)
+                    Debug.Log($"CSLTwitchCitizens: no chatters retrieved from API. Reason: {ex.Message}");
                     return;
                 }
 
-                var chattersCount = (int) chattersResponse["chatter_count"];
-
-                if (chattersCount > 0)
-                {
-                    var chatters = new List<string>(chattersCount);
-                    foreach (DictionaryEntry group in (Hashtable) chattersResponse["chatters"])
-                    {
-                        chatters.AddRange(((ArrayList)group.Value).Cast<string>().ToList());
-                    }
-
-                    ChattersUpdated?.Invoke(this, chatters.ToArray());
-                }
+                ChattersUpdated?.Invoke(this, chatters.ToArray());
             });
         }
     }

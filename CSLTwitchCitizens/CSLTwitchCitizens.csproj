@@ -17,7 +17,7 @@
         <HintPath>..\Vendor\ColossalManaged.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="ICities, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <Reference Include="ICities">
         <HintPath>..\Vendor\ICities.dll</HintPath>
         <Private>false</Private>
       </Reference>

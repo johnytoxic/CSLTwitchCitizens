@@ -16,19 +16,19 @@ namespace CSLTwitchCitizens
 
             PatchMethods();
 
-            TwitchCitizensMod.TwitchChannelNameChanged += HandleChannelNameChanged;
+            TwitchCitizensMod.TwitchSettingsChanged += HandleSettingsChanged;
         }
 
         public override void OnReleased()
         {
-            TwitchCitizensMod.TwitchChannelNameChanged -= HandleChannelNameChanged;
+            TwitchCitizensMod.TwitchSettingsChanged -= HandleSettingsChanged;
 
             _job?.Stop();
         }
 
         public override void OnLevelLoaded(LoadMode mode)
         {
-            MaybeStartPollingTwitchChatters(TwitchCitizensMod.TwitchChannelName);
+            MaybeStartPollingTwitchChatters(TwitchCitizensMod.TwitchAccessToken, TwitchCitizensMod.TwitchBroadcasterID);
         }
 
         public override void OnLevelUnloading()
@@ -51,16 +51,16 @@ namespace CSLTwitchCitizens
             GenerateCitizenNamePatch.CitizenNames = currentChatters.ToArray();
         }
 
-        private void HandleChannelNameChanged(object sender, string channelName)
+        private void HandleSettingsChanged(object sender, string accessToken, string broadcasterID)
         {
-            MaybeStartPollingTwitchChatters(channelName);
+            MaybeStartPollingTwitchChatters(accessToken, broadcasterID);
         }
 
-        private void MaybeStartPollingTwitchChatters(string channelName)
+        private void MaybeStartPollingTwitchChatters(string accessToken, string broadcasterID)
         {
-            if (!string.IsNullOrEmpty(channelName))
+            if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(broadcasterID))
             {
-                _job = new TwitchChattersJob(channelName);
+                _job = new TwitchChattersJob(new TwitchAPI(accessToken), broadcasterID);
                 _job.ChattersUpdated += HandleChattersUpdated;
                 _job.Start();
             }

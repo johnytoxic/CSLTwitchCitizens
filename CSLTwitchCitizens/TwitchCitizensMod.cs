@@ -9,34 +9,96 @@ namespace CSLTwitchCitizens
         public string Name => "Twitch Citizens";
         public string Description => "Integrate your Twitch.tv viewers into Cities: Skylines";
 
-        public delegate void OnTwitchChannelNameChanged(object sender, string channelName);
+        public delegate void OnSettingsChanged(object sender, string access_token, string broadcaster_id);
+        public static event OnSettingsChanged TwitchSettingsChanged;
 
-        public static event OnTwitchChannelNameChanged TwitchChannelNameChanged;
-
-        private const string TwitchChannelNamePrefKey = "TwitchCitizensMod_TwitchChannelName";
-        public static string TwitchChannelName
+        public static string TwitchAccessToken
         {
-            get => PlayerPrefs.GetString(TwitchChannelNamePrefKey, "");
-            set
-            {
-                PlayerPrefs.SetString(TwitchChannelNamePrefKey, value);
-                TwitchChannelNameChanged?.Invoke(null, value);
-            }
+            get => PlayerPrefs.GetString("TwitchCitizensMod_AccessToken", "");
+            set => PlayerPrefs.SetString("TwitchCitizensMod_AccessToken", value);
+        }
+
+        public static string TwitchBroadcasterName
+        {
+            get => PlayerPrefs.GetString("TwitchCitizensMod_BroadcasterName", "");
+            set => PlayerPrefs.SetString("TwitchCitizensMod_BroadcasterName", value);
+        }
+
+        public static string TwitchBroadcasterID
+        {
+            get => PlayerPrefs.GetString("TwitchCitizensMod_BroadcasterID", "");
+            set => PlayerPrefs.SetString("TwitchCitizensMod_BroadcasterID", value);
         }
 
         public void OnSettingsUI(UIHelperBase helper)
         {
+            UILabel errorLabel = null;
+            UITextField broadcasterNameTextField = null;
+
+            void UpdateBroadcaster(string access_token)
+            {
+                var api = new TwitchAPI(access_token);
+                api.GetBroadcaster((broadcaster, ex) =>
+                {
+                    if (ex != null)
+                    {
+                        errorLabel.text = ex.Message;
+                        broadcasterNameTextField.text = "";
+                    }
+                    else
+                    {
+                        TwitchBroadcasterID = broadcaster.ID;
+                        TwitchBroadcasterName = broadcaster.Name;
+
+                        errorLabel.text = "";
+                        broadcasterNameTextField.text = TwitchBroadcasterName;
+
+                        TwitchSettingsChanged.Invoke(this, TwitchAccessToken, TwitchBroadcasterID);
+                    }
+                });
+            }
+
             UIHelperBase settingsGroup = helper.AddGroup("Twitch Citizens Settings");
-            var channelNameTextField = (UITextField) settingsGroup.AddTextfield(
-                "Twitch Channel Name",
-                TwitchChannelName,
-                (v) => { },
-                (v) => { TwitchChannelName = v; }
+            var accessTokenTextField = (UITextField)settingsGroup.AddTextfield(
+                "Twitch Access Token",
+                TwitchAccessToken,
+                (v) => {
+                    TwitchAccessToken = v;
+                    UpdateBroadcaster(v);
+                }
             );
 
-            var textfieldContainer = channelNameTextField.GetComponent<UIComponent>().parent as UIPanel;
-            var channelNameHint = textfieldContainer.AddUIComponent<UILabel>();
-            channelNameHint.text = "(e.g. \"paradoxinteractive\", like in \"https://www.twitch.tv/paradoxinteractive\")";
+            var textfieldContainer = accessTokenTextField.GetComponent<UIComponent>().parent as UIPanel;
+
+            string[] labels =
+            {
+                "Please authorize this mod to access a list of viewers.",
+                "Do not share this secret with anyone and do not show it on-stream!",
+                "Visit https://johnytoxic.github.io/CSLTwitchCitizens/ to obtain the access token."
+            };
+
+            foreach (var msg in labels)
+            {
+                textfieldContainer.AddUIComponent<UILabel>().text = msg;
+            }
+
+            settingsGroup.AddSpace(48);
+            var openSiteButton = settingsGroup.AddButton("Open in Browser", () =>
+            {
+                System.Diagnostics.Process.Start("https://johnytoxic.github.io/CSLTwitchCitizens/");
+            });
+
+            settingsGroup.AddSpace(24);
+            broadcasterNameTextField = (UITextField) settingsGroup.AddTextfield("Channel", TwitchBroadcasterName, v => {});
+            broadcasterNameTextField.readOnly = true;
+            errorLabel = (broadcasterNameTextField.GetComponent<UIComponent>().parent).AddUIComponent<UILabel>();
+            errorLabel.textColor = Color.red;
+
+            if (!string.IsNullOrEmpty(TwitchAccessToken)
+                && string.IsNullOrEmpty(TwitchBroadcasterID))
+            {
+                UpdateBroadcaster(TwitchAccessToken);
+            }
         }
     }
 }
